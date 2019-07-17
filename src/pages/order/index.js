@@ -7,8 +7,6 @@ import cartModel from '~s/cart';
 import { routesMap } from '~/routes';
 import { Link } from 'react-router-dom';
 
-
-
 @inject('stores') @observer class Order extends React.Component{
     state = {
         showModal: false
@@ -23,13 +21,13 @@ import { Link } from 'react-router-dom';
     }
 
     confirm = () => {
-        this.hide();
-        this.props.history.push(routesMap.result);
-        console.log(this.props.history);
+        this.props.stores.order.send().then(() => {
+            this.hide();
+            this.props.history.push(routesMap.result);
+        });
     }
 
     render(){
-        let cartModel = this.props.stores.cart;
         let orderModel = this.props.stores.order;
         let formFields = [];
 
@@ -65,9 +63,7 @@ import { Link } from 'react-router-dom';
                 </Link>
                 &nbsp;
                 <Button variant="primary" 
-                        onClick={() => {this.show(); orderModel.old();}}
-                            
-                      
+                        onClick={this.show} 
                         disabled={!orderModel.formValid}>
                     Apply order
                 </Button>
@@ -82,8 +78,7 @@ import { Link } from 'react-router-dom';
                         <Button variant="secondary" onClick={this.hide}>
                             Ooops
                         </Button>
-                        <Button variant="primary"
-                        onClick={() => {this.confirm(); cartModel.clear();}}>
+                        <Button variant="primary" onClick={this.confirm}>
                             All right
                         </Button>
                     </Modal.Footer>

@@ -1,8 +1,8 @@
-import {observable, computed, action} from 'mobx';
-import { loadavg } from 'os';
+import {observable, computed, action, runInAction} from 'mobx';
 
 export default class{
     @observable products = []
+    @observable processId = {}
 
     constructor(rootStore){
         this.rootStore = rootStore;
@@ -21,6 +21,13 @@ export default class{
     @computed get inCart(){
         return (id) => this.products.some((product) => product.id === id);
     }
+    /*
+    @computed get inProcess(){
+        return (id) => {
+            //console.log(Object.keys(this.processId));
+            return this.processId.hasOwnProperty(id.toString());
+        }
+    }*/
 
     @computed get cartCnt(){
         return this.products.length;
@@ -34,60 +41,77 @@ export default class{
 
     @action load(){
         this.api.load(this.token).then((data) => {
-            this.products = data.cart;
+            runInAction(() => {
+                this.products = data.cart;
             
-            if(data.needUpdate){
-                this.token = data.token;
-                this.storage.setItem('cartToken', this.token);
-            }
+                if(data.needUpdate){
+                    this.token = data.token;
+                    this.storage.setItem('cartToken', this.token);
+                }
+            });
+        }).catch(() => {
+            // 
         });
     }
 
     @action add(id){
-        this.api.add(this.token, id).then((res) => {
-            if(res){
-                this.products.push({id, cnt: 1});
-            }
-        });
-    }
+        if(!(this.inCart(id) || id in this.processId)){
+            this.processId[id] = true;
 
-
-    @action clear(){
-        this.api.clear(this.token).then((res) => {
-            if(res){
-                this.products.splice(0,this.products.length)
-            }
-        });
-    }
-
-    @action change(id,cnt){
-        let index = this.products.findIndex((pr) => pr.id === id);
-
-        this.api.chengeQaunt(this.token, id, cnt).then((res) => {
-            if(res){
-                this.products[index].cnt = cnt;
-            }
-        });
-    }
-
-
-/*
-    @action change(id, cnt){
-        let index = this.products.findIndex((pr) => pr.id === id);
-
-        if(index !== -1){
-            this.products[index].cnt = cnt;
-        }
-    }
-*/
-    @action remove(id){
-        let index = this.products.findIndex((pr) => pr.id === id);
-
-        if(index !== -1){
-            this.api.remove(this.token, id).then((res) => {
-                this.products.splice(index, 1);
+            this.api.add(this.token, id).then((res) => {
+                if(res){
+                    this.products.push({id, cnt: 1});
+                }
+            }).catch(() => {
+                this.rootStore.notifications.add('Can`t add item in cart! Try again!');
+            }).finally(() => {
+                delete this.processId[id];
             });
         }
+    }
+
+    @action change(id, cnt){
+        if(!(id in this.processId)){
+            let index = this.products.findIndex((pr) => pr.id === id);
+
+            if(index !== -1){
+                this.processId[id] = true;
+
+                this.api.changeCnt(this.token, id, cnt).then((res) => {
+                    this.products[index].cnt = cnt;
+                    delete this.processId[id];
+                });
+            }
+        }
+    }
+
+    @action remove(id){
+        if(this.inCart(id) && !(id in this.processId)){
+            let index = this.products.findIndex((pr) => pr.id === id);
+
+            if(index !== -1){
+                this.processId[id] = true;
+
+                this.api.remove(this.token, id).then((res) => {
+                    this.products.splice(index, 1);
+                    delete this.processId[id];
+                });
+            }
+        }
+    }
+
+    @action clean(){
+        return new Promise((resolve, reject) => {
+            this.api.clean(this.token).then((res) => {
+                if(res){
+                    this.products = [];
+                    resolve();
+                }
+                else{
+                    reject();
+                }
+            });
+        });
     }
 }
 

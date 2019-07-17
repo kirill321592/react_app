@@ -3,6 +3,7 @@ import styles from './app.module.css';
 import withStore from '~/hocs/withStore';
 import {BrowserRouter as Router, Route, Switch, NavLink} from 'react-router-dom';
 import routes, { routesMap } from '~/routes';
+import Notifications from '~p/notifications';
 
 class App extends React.Component{
     render(){
@@ -18,12 +19,13 @@ class App extends React.Component{
 
         return (
         <Router>
+            <Notifications/>
             <header>
                 <div className="container">
                     <hr/>
                     <div className="row justify-content-between">
                         <div className="col col-4">
-                            <div className="alert alert-success">Shop</div>
+                            <div className="alert alert-success">Site name</div>
                         </div>
                         <div className="col col-3">
                             <strong>
@@ -40,7 +42,7 @@ class App extends React.Component{
                 <div className="row">
                     <div className="col col-3">
                         <ul className="list-group">
-                            <li className="list-group-item">
+                            <li className={`list-group-item ${styles.myItem}`}>
                                 <NavLink to={routesMap.home} exact activeClassName={styles.active}>
                                     Home
                                 </NavLink>

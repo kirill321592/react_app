@@ -24,9 +24,14 @@ export default class{
             valid: null
         }
     }
-    @observable lastForm= {
-        name:""
+
+    @observable lastOrderCache = {
+        name: '',
+        email: '',
+        phone: '',
+        total: ''
     }
+
     constructor(rootStore){
         this.rootStore = rootStore;
     }
@@ -44,13 +49,27 @@ export default class{
 
         return data;
     }
-    @action old(){
-            this.lastForm.name = this.formData.name.value;
-    }
+
     @action change(key, value){
         let field = this.formData[key];
         field.value = value;
         field.valid = field.validator(field.value);
+    }
+
+    @action send(){
+        return new Promise((resolve, reject) => {
+            // запрос к api order/create
+            this.rootStore.cart.clean().then(() => {
+                this.lastOrderCache.total = this.rootStore.cart.total;
+
+                for(let key in this.formData){
+                    this.lastOrderCache[key] = this.formData[key].value;
+                    this.formData[key].value = '';
+                }
+
+                resolve();
+            });
+        });
     }
 }
 

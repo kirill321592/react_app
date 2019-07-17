@@ -18,12 +18,12 @@ function remove(token, id){
     return makeRequest(`cart/remove.php?token=${token}&id=${id}`);
 }
 
-function chengeQaunt(token, id,cnt){
+function changeCnt(token, id, cnt){
     return makeRequest(`cart/change.php?token=${token}&id=${id}&cnt=${cnt}`);
 }
-function clear(token){
+
+function clean(token){
     return makeRequest(`cart/clean.php?token=${token}`);
 }
 
-
-export { load, add, remove, chengeQaunt, clear};
+export { load, add, remove, changeCnt, clean };

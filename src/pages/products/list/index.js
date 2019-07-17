@@ -14,12 +14,18 @@ import {observer, inject} from 'mobx-react';
             let btn;
 
             if(cart.inCart(product.id)){
-                btn = <Button variant="danger" onClick={() => cart.remove(product.id)}>
+                btn = <Button variant="danger" 
+                              onClick={() => cart.remove(product.id)}
+                              disabled={product.id in cart.processId}
+                >
                     Remove from cart
                 </Button>
             }
             else{
-                btn = <Button variant="success" onClick={() => cart.add(product.id)}>
+                btn = <Button variant="success" 
+                              onClick={() => cart.add(product.id)}
+                              disabled={product.id in cart.processId}
+                >
                     Add to cart
                 </Button>
             }
@@ -47,6 +53,12 @@ import {observer, inject} from 'mobx-react';
                 <div className="row">
                     {productsCards}
                 </div>
+                <hr/>
+                <button className="btn btn-danger" onClick={() => 
+                    this.props.stores.notifications.add(Math.random() + ' error!')
+                }>
+                    Test Error button
+                </button>
             </div>
         );
     }

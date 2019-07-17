@@ -1,25 +1,24 @@
 import React from 'react';
 
-import cartModel from '~s/cart.js';
-import orderModel from '~s/order.js';
-import {observer, inject} from 'mobx-react';
 import { urlBuilder } from '~/routes';
 import { Link } from 'react-router-dom';
+import withStore from '~/hocs/withStore';
 
-@inject('stores') @observer class Result extends React.Component{
+class Result extends React.Component{
     render(){
-        let orderModel = this.props.stores.order;
-        let cartModel = this.props.stores.cart;
+        let data = this.props.stores.order.lastOrderCache;
 
         return (
             <div>
                 <h2>Congratulations!</h2>
-                <p>Hi, {orderModel.lastForm.name}!</p>
-         
-            
-               
+                <p>Hi, {data.name}!</p>
+                <p><strong>Total: {data.total}</strong></p>
+                <div>
+                    
+                </div>
             </div>
         )
     }
 }
-export default Result;
+
+export default withStore(Result);
